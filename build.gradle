@@ -1,18 +1,31 @@
-plugins {
-    id 'java'
-    id 'eclipse'
-    id 'com.github.johnrengelman.shadow' version '1.1.2'
-    id 'maven-publish'
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+    }
 }
+
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
+
 
 group = 'shaded.httpcomponents'
 version = '4.3.6'
 
-task wrapper(type: Wrapper) { gradleVersion = '2.1' }
+task wrapper(type: Wrapper) { gradleVersion = '3.1' }
 
 task sourceJar(type: Jar, dependsOn: ':shadowSources') {
     from files("build/tmp/src")
 }
+
+
 
 void withFileSystem(URI uri, callback) {
     java.nio.file.FileSystem fileSystem = null
