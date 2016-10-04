@@ -26,8 +26,7 @@ task sourceJar(type: Jar, dependsOn: ':shadowSources') {
 }
 
 
-
-void withFileSystem(URI uri, callback) {
+static void withFileSystem(URI uri, callback) {
     java.nio.file.FileSystem fileSystem = null
     try {
         fileSystem = java.nio.file.FileSystems.newFileSystem(uri, [:])
