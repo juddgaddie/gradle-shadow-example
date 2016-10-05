@@ -31,7 +31,7 @@ static void withFileSystem(URI uri, callback) {
     try {
         fileSystem = java.nio.file.FileSystems.newFileSystem(uri, [:])
         callback(fileSystem)
-    } catch (java.nio.file.FileSystemAlreadyExistsException e) {
+    } catch (java.nio.file.FileSystemAlreadyExistsException ignored) {
         fileSystem = java.nio.file.FileSystems.getFileSystem(uri)
         callback(fileSystem)
     } finally {
