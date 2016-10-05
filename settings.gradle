@@ -1,2 +1,3 @@
 include 'submod'
 
+project(':submod').projectDir = new File("$rootDir/subdir/submod")

@@ -11,7 +11,6 @@ buildscript {
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'eclipse'
     apply plugin: 'maven-publish'
     apply plugin: 'com.github.johnrengelman.shadow'
 }
@@ -25,22 +24,10 @@ task sourceJar(type: Jar, dependsOn: ':shadowSources') {
     from files("build/tmp/shadowedSrc")
 }
 
+task testTask << {
+    configurations.compile.incoming.resolutionResult.allDependencies.each { println it }
 
-static void withFileSystem(URI uri, callback) {
-    java.nio.file.FileSystem fileSystem = null
-    try {
-        fileSystem = java.nio.file.FileSystems.newFileSystem(uri, [:])
-        callback(fileSystem)
-    } catch (java.nio.file.FileSystemAlreadyExistsException ignored) {
-        fileSystem = java.nio.file.FileSystems.getFileSystem(uri)
-        callback(fileSystem)
-    } finally {
-        if (fileSystem != null) {
-            fileSystem.close();
-        }
-    }
 }
-
 task shadowSources << {
 
     java.nio.charset.Charset sourceCharset = java.nio.charset.StandardCharsets.UTF_8
@@ -114,4 +101,21 @@ publishing {
     }
 
     repositories { mavenLocal(); }
+}
+
+
+
+static void withFileSystem(URI uri, callback) {
+    java.nio.file.FileSystem fileSystem = null
+    try {
+        fileSystem = java.nio.file.FileSystems.newFileSystem(uri, [:])
+        callback(fileSystem)
+    } catch (java.nio.file.FileSystemAlreadyExistsException ignored) {
+        fileSystem = java.nio.file.FileSystems.getFileSystem(uri)
+        callback(fileSystem)
+    } finally {
+        if (fileSystem != null) {
+            fileSystem.close();
+        }
+    }
 }
