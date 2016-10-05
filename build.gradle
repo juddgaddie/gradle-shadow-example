@@ -9,15 +9,15 @@ buildscript {
     }
 }
 
-
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-apply plugin: 'com.github.johnrengelman.shadow'
-
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.github.johnrengelman.shadow'
+}
 
 group = 'shaded.httpcomponents'
-version = '4.3.6'
+version = '4.3.7'
 
 task wrapper(type: Wrapper) { gradleVersion = '3.1' }
 
@@ -97,6 +97,7 @@ repositories {
 dependencies {
     compile 'io.aeron:aeron-client:1.0.1'
     compile 'org.nanohttpd:nanohttpd:2.3.1'
+    compile project('submod')
 }
 
 shadowJar {
