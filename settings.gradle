@@ -1,3 +1,6 @@
-include 'submod'
+//include 'submod'
+include 'toplevelmodule'
 
-project(':submod').projectDir = new File("$rootDir/subdir/submod")
+//project(':submod').projectDir = new File("$rootDir/subdir/submod")
+
+

@@ -1,121 +1,39 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
-    }
+repositories {
+    mavenCentral()
 }
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.github.johnrengelman.shadow'
 }
 
-group = 'shaded.httpcomponents'
-version = '4.3.7'
 
 task wrapper(type: Wrapper) { gradleVersion = '3.1' }
 
-task sourceJar(type: Jar, dependsOn: ':shadowSources') {
-    from files("build/tmp/shadowedSrc")
-}
 
 task testTask << {
     configurations.compile.incoming.resolutionResult.allDependencies.each { println it }
-
-}
-task shadowSources << {
-
-    java.nio.charset.Charset sourceCharset = java.nio.charset.StandardCharsets.UTF_8
-    java.nio.file.Path tmpDstDir = file("build/tmp/shadowedSrc").toPath()
-
     def componentIds = configurations.compile.incoming.resolutionResult.allDependencies.collect { it.selected.id }
     def result = dependencies.createArtifactResolutionQuery()
             .forComponents(componentIds)
             .withArtifacts(JvmLibrary, SourcesArtifact, JavadocArtifact)
             .execute()
 
-    for (component in result.resolvedComponents) {
-        component.getArtifacts(SourcesArtifact).each {ArtifactResult artifactResult ->
-            println "Processing sources for ${component.id}: ${artifactResult.file}"
-
-            int sourceFileCounter = 0
-
-            withFileSystem(new URI("jar:file:" + artifactResult.file.absolutePath)) { sourceJarFileSystem ->
-
-                zipTree(artifactResult.file).visit { element ->
-                    String relativePath = element.relativePath.toString()
-                    if (relativePath.startsWith("META-INF") || element.file.isDirectory() || !element.file.getName().endsWith(".java")) {
-                        return
-                    }
-//                    println relativePath
-//                    println tmpSourceDir
-//                    if (java.nio.file.Files.exists(tmpDstDir)) {
-//                        return
-//                    }
-//                    if (!java.nio.file.Files.exists(tmpSourceDir.getParent())) {
-//                        java.nio.file.Files.createDirectories(tmpSourceDir.getParent())
-//                    }
-                    sourceFileCounter++
-
-                    java.nio.file.Path originalFile = sourceJarFileSystem.getPath(element.relativePath.toString())
-                    println originalFile
-                    String content = new String(java.nio.file.Files.readAllBytes(originalFile), sourceCharset);
-                    java.nio.file.Path writeLocation = tmpDstDir.resolve(originalFile.toString())
-                    println writeLocation.toAbsolutePath()
-                    java.nio.file.Files.createDirectories(writeLocation.getParent())
-                    java.nio.file.Files.write(writeLocation, content.getBytes(sourceCharset));
-                }
-            }
-
-            println "  added ${sourceFileCounter} files"
-        }
+    result.components.each {ComponentResult component ->
+        println "Compo: " + component.id
     }
-}
+    result.resolvedComponents.each {ComponentArtifactsResult component ->
+        println "Resolved Compo: " + component.id
+        component.getArtifacts(SourcesArtifact).each {ArtifactResult artifactResult ->
+            println "Sources for ${component.id}: ${artifactResult.file}"
+        }
 
-repositories {
-    mavenCentral();
+    }
+
 }
 
 dependencies {
     compile 'io.aeron:aeron-client:1.0.1'
     compile 'org.nanohttpd:nanohttpd:2.3.1'
-    compile project('submod')
-}
-
-shadowJar {
-    classifier ''
-}
-
-publishing {
-    publications {
-        shadow(MavenPublication) {
-            from components.shadow   //produces the binary jar with shadow
-
-            artifact sourceJar { classifier "sources" }  //produces the sourcesJar with sourceJar
-        }
-    }
-
-    repositories { mavenLocal(); }
-}
-
-
-
-static void withFileSystem(URI uri, callback) {
-    java.nio.file.FileSystem fileSystem = null
-    try {
-        fileSystem = java.nio.file.FileSystems.newFileSystem(uri, [:])
-        callback(fileSystem)
-    } catch (java.nio.file.FileSystemAlreadyExistsException ignored) {
-        fileSystem = java.nio.file.FileSystems.getFileSystem(uri)
-        callback(fileSystem)
-    } finally {
-        if (fileSystem != null) {
-            fileSystem.close();
-        }
-    }
+//    compile project('submod')
+    compile project('toplevelmodule')
 }
