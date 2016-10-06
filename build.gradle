@@ -6,6 +6,17 @@ allprojects {
     apply plugin: 'java'
 }
 
+subprojects {
+    task jarSources(type: Jar){
+        from sourceSets.main.allSource
+        classifier = 'source'
+    }
+
+    artifacts {
+        archives jarSources
+    }
+}
+
 
 task wrapper(type: Wrapper) { gradleVersion = '3.1' }
 
@@ -35,5 +46,5 @@ dependencies {
     compile 'io.aeron:aeron-client:1.0.1'
     compile 'org.nanohttpd:nanohttpd:2.3.1'
 //    compile project('submod')
-    compile project('toplevelmodule')
+    compile project(':toplevelmodule')
 }
