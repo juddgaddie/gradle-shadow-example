@@ -6,6 +6,9 @@ allprojects {
     apply plugin: 'java'
 }
 
+defaultTasks 'jarSources','testTask'
+
+
 subprojects {
     task jarSources(type: Jar){
         from sourceSets.main.allSource
@@ -30,21 +33,29 @@ task testTask << {
             .execute()
 
     result.components.each {ComponentResult component ->
-        println "Compo: " + component.id
+        println "Components in compile configuration: " + component.id
     }
+
+    boolean foundTopLevelModule = false
     result.resolvedComponents.each {ComponentArtifactsResult component ->
-        println "Resolved Compo: " + component.id
+        println "Resolved Components: " + component.id
         component.getArtifacts(SourcesArtifact).each {ArtifactResult artifactResult ->
             println "Sources for ${component.id}: ${artifactResult.file}"
+            if (component.id.toString().contains("project :toplevelmodule")){
+               foundTopLevelModule = true
+            }
         }
 
+    }
+    if (foundTopLevelModule) {
+        println "Found Top Level Module"
+    } else {
+        println "Top level Module not found in resolved artifacts"
     }
 
 }
 
 dependencies {
-    compile 'io.aeron:aeron-client:1.0.1'
     compile 'org.nanohttpd:nanohttpd:2.3.1'
-//    compile project('submod')
     compile project(':toplevelmodule')
 }
