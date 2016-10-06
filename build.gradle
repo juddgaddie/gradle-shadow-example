@@ -6,11 +6,11 @@ allprojects {
     apply plugin: 'java'
 }
 
-defaultTasks 'jarSources','testTask'
+defaultTasks 'clean', 'jarSources', 'testTask'
 
 
 subprojects {
-    task jarSources(type: Jar){
+    task jarSources(type: Jar) {
         from sourceSets.main.allSource
         classifier = 'source'
     }
@@ -25,24 +25,26 @@ task wrapper(type: Wrapper) { gradleVersion = '3.1' }
 
 
 task testTask << {
-    configurations.compile.incoming.resolutionResult.allDependencies.each { println it }
-    def componentIds = configurations.compile.incoming.resolutionResult.allDependencies.collect { it.selected.id }
-    def result = dependencies.createArtifactResolutionQuery()
+    configurations.compile.incoming.resolutionResult.allDependencies.each { dependencyResult -> println dependencyResult }
+    List<ComponentIdentifier> componentIds = configurations.compile.incoming.resolutionResult.allDependencies.collect { dependencyResult ->
+        dependencyResult.selected.id
+    }
+    ArtifactResolutionResult result = dependencies.createArtifactResolutionQuery()
             .forComponents(componentIds)
             .withArtifacts(JvmLibrary, SourcesArtifact, JavadocArtifact)
             .execute()
 
-    result.components.each {ComponentResult component ->
+    result.components.each { ComponentResult component ->
         println "Components in compile configuration: " + component.id
     }
 
     boolean foundTopLevelModule = false
-    result.resolvedComponents.each {ComponentArtifactsResult component ->
+    result.resolvedComponents.each { ComponentArtifactsResult component ->
         println "Resolved Components: " + component.id
-        component.getArtifacts(SourcesArtifact).each {ArtifactResult artifactResult ->
+        component.getArtifacts(SourcesArtifact).each { ArtifactResult artifactResult ->
             println "Sources for ${component.id}: ${artifactResult.file}"
-            if (component.id.toString().contains("project :toplevelmodule")){
-               foundTopLevelModule = true
+            if (component.id.toString().contains("project :toplevelmodule")) {
+                foundTopLevelModule = true
             }
         }
 
